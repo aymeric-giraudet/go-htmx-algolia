@@ -23,13 +23,13 @@ var f embed.FS
 func main() {
 	var err error
 	testTemplate, err := template.New("index.html").Funcs(template.FuncMap{
-		"contains": func(s []string, e string) template.HTMLAttr {
+		"contains": func(s []string, e string) bool {
 			for _, a := range s {
 				if a == e {
-					return template.HTMLAttr("checked")
+					return true
 				}
 			}
-			return template.HTMLAttr("")
+			return false
 		},
 	}).ParseFS(f, "index.html")
 	if err != nil {

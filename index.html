@@ -71,9 +71,9 @@
                         type="checkbox"
                         value="{{ $key }}"
                         name="brand"
-                        {{contains
-                        $.Brands
-                        $key}}
+                        {{if contains $.Brands $key}}
+                        checked
+                        {{end}}
                       />
                       <span class="ais-RefinementList-labelText"
                         >{{ $key }}</span
