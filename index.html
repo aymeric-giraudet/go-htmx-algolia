@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX & Go Algolia InstantSearch</title>
+    <script src="https://unpkg.com/htmx.org@1.9.3"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/instantsearch.css@7/themes/satellite-min.css"
+    />
+    <style>
+      body,
+      h1 {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+      .search-panel {
+        display: flex;
+      }
+      .search-panel__filters {
+        flex: 1;
+      }
+      .search-panel__results {
+        flex: 3;
+      }
+      .searchbox {
+        margin-bottom: 2rem;
+      }
+      .pagination {
+        margin: 2rem auto;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      {{ block "search-form" .}}
+      <form
+        class="search-panel"
+        hx-get="/"
+        hx-swap="outerHTML"
+        hx-push-url="true"
+        hx-trigger="change, input from:input#searchbox"
+        hx-sync="this:replace"
+      >
+        <div class="search-panel__filters">
+          <div class="ais-Panel">
+            <div class="ais-Panel-header">
+              <span>brand</span>
+            </div>
+            <div class="ais-Panel-body">
+              <div class="ais-RefinementList">
+                <ul class="ais-RefinementList-list">
+                  {{ range $key, $value := .Facets }}
+                  <li class="ais-RefinementList-item {{ if contains $.Brands $key }}ais-RefinementList-item--selected{{ end }}">
+                    <label class="ais-RefinementList-label">
+                      <input
+                        class="ais-RefinementList-checkbox"
+                        type="checkbox"
+                        value="{{ $key }}"
+                        name="brand"
+                        {{contains
+                        $.Brands
+                        $key}}
+                      />
+                      <span class="ais-RefinementList-labelText"
+                        >{{ $key }}</span
+                      >
+                      <span class="ais-RefinementList-count">{{ $value }}</span>
+                    </label>
+                  </li>
+                  {{ end }}
+                  {{ range .HiddenFacets }}
+                  <input
+                    hidden
+                    type="checkbox"
+                    name="brand"
+                    value="{{ . }}"
+                    checked
+                  />
+                  {{ end}}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-panel__results">
+          <div class="ais-SearchBox searchbox">
+            <div class="ais-SearchBox-form">
+              <input
+                class="ais-SearchBox-input"
+                type="search"
+                name="query"
+                id="searchbox"
+                autocorrect="off"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                value="{{ .Query }}"
+              />
+              <button
+                class="ais-SearchBox-submit"
+                type="submit"
+                title="Submit the search query"
+              />
+            </div>
+          </div>
+
+          <div class="ais-Hits">
+            <ol class="ais-Hits-list">
+              {{ range .Hits }}
+              <li class="ais-Hits-item">
+                <article>
+                  <h1>{{ .Name }}</h1>
+                  <p>{{ .Description }}</p>
+                </article>
+              </li>
+              {{ end }}
+            </ol>
+          </div>
+
+          <div class="pagination">
+            <div class="ais-Pagination">
+              <ul class="ais-Pagination-list">
+                <li class="ais-Pagination-item ais-Pagination-item--firstPage {{ if .IsFirstPage }} ais-Pagination-item--disabled {{ end }}">
+                  <label class="ais-Pagination-link">
+                    <input
+                      style="display: contents;"
+                      type="radio"
+                      name="page"
+                      value="0"
+                    />
+                  &lt;&lt;
+                </li>
+                {{ range .Pages }}
+                <li class="ais-Pagination-item ais-Pagination-item--page {{ if .Active }} ais-Pagination-item--selected {{ end }}">
+                  <label class="ais-Pagination-link">
+                    <input
+                      style="display: contents;"
+                      type="radio"
+                      name="page"
+                      value="{{ .Number }}"
+                      {{ if .Active }}
+                      checked
+                      {{ end }}
+                    />
+                  {{ .Label }}
+                </li>
+                {{ end }}
+                <li class="ais-Pagination-item ais-Pagination-item--lastPage {{ if .IsLastPage }} ais-Pagination-item--disabled {{ end }}">
+                  <label class="ais-Pagination-link">
+                    <input
+                      style="display: contents;"
+                      type="radio"
+                      name="page"
+                      value="{{ .LastPage }}"
+                    />
+                  &gt;&gt;
+                </li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </form>
+      {{ end }}
+    </main>
+  </body>
+</html>
